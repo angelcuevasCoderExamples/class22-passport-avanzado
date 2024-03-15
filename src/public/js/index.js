@@ -1,4 +1,5 @@
 const form = document.getElementById("baseForm");
+const errorParagraph = document.getElementById("errors");
 
 form.addEventListener('submit',(e)=>{
     e.preventDefault();
@@ -20,3 +21,13 @@ form.addEventListener('submit',(e)=>{
     })
 
 })
+
+function callCurrent(){
+    fetch('/current')
+    .then(res=>{ console.log("STATUS",res.status);  return res.json()}).then((res)=>{
+        if(res.error){
+            errorParagraph.innerHTML = res.error
+        }
+    })
+
+}

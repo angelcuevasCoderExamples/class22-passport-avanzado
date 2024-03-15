@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const { JWT_SECRET, initializePassport } = require('./public/config/passport.config');
 const port = 8080; 
 const passport = require('passport');
+const { callPassport } = require('./utils');
 
 const app = express();
 
@@ -35,7 +36,7 @@ app.post('/login', (req, res)=>{
     res.cookie('coderCookie',token,{httpOnly: true }).send({status:'success', message:'successfuly logged in'})
 })
 
-app.get('/current', passport.authenticate('jwt',{session:false}), (req, res)=>{
+app.get('/current', callPassport('jwt'), (req, res)=>{
     res.send({status:'success', user: req.user, token: req.cookies.coderCookie })
 })
 
