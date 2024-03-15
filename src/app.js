@@ -1,7 +1,9 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const { JWT_SECRET, initializePassport } = require('./public/config/passport.config');
 const port = 8080; 
+const passport = require('passport');
 
 const app = express();
 
@@ -10,6 +12,9 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static(`${__dirname}/public`));
 app.use(cookieParser());
+
+initializePassport();
+app.use(passport.initialize());
 
 
 /** "DATABASE" */
@@ -26,8 +31,12 @@ app.post('/login', (req, res)=>{
         return res.status(400).send({status:'error', error:'incorrect credentials'})
     }
 
-    const token = jwt.sign({email, password},'ourSecret', {expiresIn:'24h'})
+    const token = jwt.sign({email, password}, JWT_SECRET, {expiresIn:'24h'})
     res.cookie('coderCookie',token,{httpOnly: true }).send({status:'success', message:'successfuly logged in'})
+})
+
+app.get('/current', passport.authenticate('jwt',{session:false}), (req, res)=>{
+    res.send({status:'success', user: req.user, token: req.cookies.coderCookie })
 })
 
 
