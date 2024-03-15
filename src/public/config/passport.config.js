@@ -9,8 +9,8 @@ const initializePassport = ()=>{
         jwtFromRequest: jwt.ExtractJwt.fromExtractors([cookieExtractor])
     },(jwt_payload, done)=>{
         try {
-            done(null, false, {messages:"user doesn't exist"})
-            //return done(null, jwt_payload); //done(null, false)
+            //done(null, false, {messages:"user doesn't exist"})
+            return done(null, jwt_payload); //done(null, false)
         } catch (error) {
             return done(error)
         }

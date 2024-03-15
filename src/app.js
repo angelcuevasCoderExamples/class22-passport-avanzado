@@ -4,7 +4,7 @@ const cookieParser = require('cookie-parser');
 const { JWT_SECRET, initializePassport } = require('./public/config/passport.config');
 const port = 8080; 
 const passport = require('passport');
-const { callPassport } = require('./utils');
+const { callPassport, checkRoleAuthorization } = require('./utils');
 
 const app = express();
 
@@ -20,7 +20,10 @@ app.use(passport.initialize());
 
 /** "DATABASE" */
 
-let users = [{email:'johndoe@gmail.com', password:1234}]
+let users = [
+    { email: 'johndoe@gmail.com', password: 1234, role: 'user' },
+    { email: 'admin@gmail.com', password: 1234, role: 'admin' }
+]
 
 
 //** ENDPOINTS */
@@ -28,15 +31,16 @@ let users = [{email:'johndoe@gmail.com', password:1234}]
 app.post('/login', (req, res)=>{
     const {email, password} = req.body; 
 
-    if(!users.find(u=>u.email == email && u.password == password)){
+    let user = users.find(u=>u.email == email && u.password == password);
+    if(!user){
         return res.status(400).send({status:'error', error:'incorrect credentials'})
     }
 
-    const token = jwt.sign({email, password}, JWT_SECRET, {expiresIn:'24h'})
+    const token = jwt.sign({email, password, role: user.role}, JWT_SECRET, {expiresIn:'24h'})
     res.cookie('coderCookie',token,{httpOnly: true }).send({status:'success', message:'successfuly logged in'})
 })
 
-app.get('/current', callPassport('jwt'), (req, res)=>{
+app.get('/current', callPassport('jwt'), checkRoleAuthorization('admin'), (req, res)=>{
     res.send({status:'success', user: req.user, token: req.cookies.coderCookie })
 })
 
